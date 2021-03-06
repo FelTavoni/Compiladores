@@ -24,7 +24,7 @@ Para compilar o programa, é necessário que você realize o download da pasta a
 
 Após a construção do programa, será gerado um executável, em que para executá-lo, basta executar o comando abaixo, no qual `<arquivo-de-entrada>` deve ser o arquivo-alvo a ser lido e `<arquivo-de-saída>` conterá a saída do programa.
 
-`java -jar analisadorLexico-1.0-SNAPSHOT-jar-with-dependencies.jar <arquivo-de-entrada<arquivo-de-saída>`
+`java -jar analisadorLexico-1.0-SNAPSHOT-jar-with-dependencies.jar <arquivo-de-entrada>.txt <arquivo-de-saída>.txt`
 
 ## Casos teste
 
