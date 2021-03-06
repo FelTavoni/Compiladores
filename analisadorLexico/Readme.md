@@ -32,7 +32,7 @@ Dentro do diretório, há também uma pasta que contém os arquivos testes.
 
 ## Arquivo executável
 
-Há também localizado no diretório `T1-analisadorLexico\target` o executável do programa.
+Há também localizado no diretório `analisadorLexico\target` o executável do programa.
 
 ### Autores
 
