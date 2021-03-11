@@ -19,6 +19,16 @@ TIPO_DECLA
         :   'literal' | 'inteiro' | 'real' | 'logico' | 'registro' | 'fim_registro'
         ;
 
+// Operadores relacionais
+OP_REL
+        :   '>' | '>=' | '<' | '<=' | '<>' | '='
+	;
+
+// Operadores aritméticos
+OP_ARIT	
+        :   '+' | '-' | '*' | '/' | '%'
+	;
+
 // Operadores lógicos
 OP_LOG
         :   'e' | 'ou' | 'nao'
@@ -34,15 +44,11 @@ NUM_REAL
         :   ('0'..'9')+ ('.' ('0'..'9')+)?
 	;
 
-// Identificadores/variáveis
-IDENT 
-        :   ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
-	;
-
 // Cadeia de caracteres errada (não fechada)
 CADEIA_ERRADA
         :   '"' (~('\n' | '\r' | '"'))* ('\n' | '\r')
 	;
+
 // Cadeia de caracteres correta
 CADEIA
         :   '"' (~('\n' | '\r' | '"'))* '"'
@@ -58,20 +64,15 @@ COMENTARIO
         :   '{' (~('\n'|'\r'|'}'))* '}' {skip();}
         ;
 
+// Identificadores/variáveis
+IDENT 
+        :   ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
+	;
+
 // Whitespace - espaço em branco
 WS
         :   ( ' ' | '\t' | '\r' | '\n' ) {skip();}
         ;
-
-// Operadores relacionais
-OP_REL
-        :   '>' | '>=' | '<' | '<=' | '<>' | '='
-	;
-
-// Operadores aritméticos
-OP_ARIT	
-        :   '+' | '-' | '*' | '/' | '%'
-	;
 
 // Delimitadores
 DELIM	
@@ -86,9 +87,14 @@ FECHA
         :   ')' | ']'
 	;
 
+ERRO
+        : .
+        ;
+
 // ===================
 // PARSER
 // ===================
+//Parser extraída da Linguagem Algorítmica (LA), desenvolvida pelo prof. Jander, no âmbito do DC/UFSCar.
 
 programa:
             declaracoes 'algoritmo' corpo 'fim_algoritmo' EOF
@@ -245,28 +251,28 @@ op_unario:
         ;
 
 expressao_aritmetica:
-            termo (OP1 termo)*
+            termo (op1 termo)*
         ;
 
 termo:
-            fator (OP2 fator)*
+            fator (op2 fator)*
         ;
 
 fator:
-            parcela (OP3 parcela)*
+            parcela (op3 parcela)*
         ;
 
-OP1:
+op1:
             '+' 
         |   '-'
         ;
 
-OP2:
+op2:
             '*'
         |   '/'
         ;
 
-OP3:
+op3:
             '%'
         ;
 

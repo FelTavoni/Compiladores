@@ -4,6 +4,7 @@ br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$Cmd_chamadaContext
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$Cmd_enquantoContext.class
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$TermoContext.class
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$Exp_relacionalContext.class
+br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$Op2Context.class
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$ParcelaContext.class
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaBaseListener.class
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$Cmd_escrevaContext.class
@@ -31,6 +32,7 @@ br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$VariavelContext.cl
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser.class
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$Numero_intervaloContext.class
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$Parcela_unarioContext.class
+br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$Op3Context.class
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$Cmd_casoContext.class
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$Expressao_aritmeticaContext.class
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$DeclaracoesContext.class
@@ -38,6 +40,7 @@ br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$ProgramaContext.cl
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$CorpoContext.class
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$Cmd_paraContext.class
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$CmdContext.class
+br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$Op1Context.class
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaListener.class
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$Cmd_retorneContext.class
 br\ufscar\dc\compiladores\analisadorSintatico\GramaticaParser$Parcela_logicaContext.class

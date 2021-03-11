@@ -35,8 +35,19 @@ public class MyCustomErrorListener implements ANTLRErrorListener {
     public void	syntaxError(Recognizer<?,?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
         // Aqui vamos colocar o tratamento de erro customizado
 
+        // Obtém o token do qual ocorreu a exceção.
         Token t = (Token) offendingSymbol;
 
-        System.out.println("Minha mensagem customizada: Erro na linha "+line+", o token é "+t.getText());
+        // Trata o erro referente ao EOF. Basicamente trata o '<EOF>' a 'EOF'.
+        if (t.getText().equals("<EOF>")) {
+            pw.println("Linha " + line + ": erro sintatico proximo a EOF");
+            pw.println("Fim da compilacao");
+        // Tratam os erros de qualquer outro token.
+        } else {
+            pw.println("Linha " + line + ": erro sintatico proximo a " + t.getText());
+            pw.println("Fim da compilacao");
+        } 
+        // Envia o erro a main, interrompendo a execução.
+        throw new RuntimeException();
     }
 }

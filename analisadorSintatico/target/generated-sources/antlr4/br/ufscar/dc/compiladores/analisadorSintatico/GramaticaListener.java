@@ -368,6 +368,36 @@ public interface GramaticaListener extends ParseTreeListener {
 	 */
 	void exitFator(GramaticaParser.FatorContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link GramaticaParser#op1}.
+	 * @param ctx the parse tree
+	 */
+	void enterOp1(GramaticaParser.Op1Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link GramaticaParser#op1}.
+	 * @param ctx the parse tree
+	 */
+	void exitOp1(GramaticaParser.Op1Context ctx);
+	/**
+	 * Enter a parse tree produced by {@link GramaticaParser#op2}.
+	 * @param ctx the parse tree
+	 */
+	void enterOp2(GramaticaParser.Op2Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link GramaticaParser#op2}.
+	 * @param ctx the parse tree
+	 */
+	void exitOp2(GramaticaParser.Op2Context ctx);
+	/**
+	 * Enter a parse tree produced by {@link GramaticaParser#op3}.
+	 * @param ctx the parse tree
+	 */
+	void enterOp3(GramaticaParser.Op3Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link GramaticaParser#op3}.
+	 * @param ctx the parse tree
+	 */
+	void exitOp3(GramaticaParser.Op3Context ctx);
+	/**
 	 * Enter a parse tree produced by {@link GramaticaParser#parcela}.
 	 * @param ctx the parse tree
 	 */

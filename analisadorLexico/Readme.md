@@ -26,13 +26,13 @@ Após a construção do programa, será gerado um executável, em que para execu
 
 `java -jar analisadorLexico-1.0-SNAPSHOT-jar-with-dependencies.jar <arquivo-de-entrada>.txt <arquivo-de-saída>.txt`
 
-## Casos teste
-
-Dentro do diretório, há também uma pasta que contém os arquivos testes.
-
 ## Arquivo executável
 
 Há também localizado no diretório `analisadorLexico\target` o executável do programa.
+
+## Testes
+
+No diretório principal, há uma pasta 'testes', caso queira testar o programa.
 
 ### Autores
 
