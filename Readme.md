@@ -1,6 +1,8 @@
 # Construção de Compiladores
 
-Repositório pessoal referante à displina Construção de Compiladores. Local usado para armazenar os trabalhos da disciplina, assim como programas relacionados a matéria.
+Seja bem vindo! Repositório pessoal referente à displina Construção de Compiladores. Local usado para armazenar os trabalhos da disciplina, assim como programas relacionados a matéria.
 
-Seja bem vindo!
+### Autor
+
+Felipe Tavoni (758707) - Graduando na Universidade Federal de São Carlos.
 

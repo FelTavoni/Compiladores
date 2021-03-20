@@ -34,7 +34,7 @@ Há também localizado no diretório `analisadorSintatico\target` o executável 
 
 No diretório principal, há uma pasta 'testes', caso queira testar o programa.
 
-### Autores
+### Autor
 
 Felipe Tavoni (758707) - Graduando na Universidade Federal de São Carlos.
 
