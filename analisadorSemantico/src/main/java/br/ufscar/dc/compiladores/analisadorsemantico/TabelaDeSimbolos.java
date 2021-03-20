@@ -9,6 +9,7 @@ public class TabelaDeSimbolos {
         INTEIRO,
         REAL,
         LOGICO,
+        REGISTRO,
         INVALIDO
     }
     

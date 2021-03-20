@@ -116,11 +116,11 @@ declaracao_local:
         ;
 
 variavel:
-            ident1=identificador (',' outrosIdent+=identificador)* ':' tipo
+            identificador (',' identificador)* ':' tipo
         ;
 
 identificador:
-            IDENT ('.' IDENT)* dimensao
+            id=IDENT ('.' IDENT)* dimensao
         ;
 
 dimensao:
@@ -219,7 +219,7 @@ cmd_faca:
         ;
 
 cmd_atribuicao:
-            '^'? identificador '<-' expressao
+            (pointer='^')? identificador '<-' expressao
         ;
 
 cmd_chamada:

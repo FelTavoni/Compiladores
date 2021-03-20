@@ -412,17 +412,14 @@ public class GramaticaParser extends Parser {
 	}
 
 	public static class VariavelContext extends ParserRuleContext {
-		public IdentificadorContext ident1;
-		public IdentificadorContext identificador;
-		public List<IdentificadorContext> outrosIdent = new ArrayList<IdentificadorContext>();
-		public TipoContext tipo() {
-			return getRuleContext(TipoContext.class,0);
-		}
 		public List<IdentificadorContext> identificador() {
 			return getRuleContexts(IdentificadorContext.class);
 		}
 		public IdentificadorContext identificador(int i) {
 			return getRuleContext(IdentificadorContext.class,i);
+		}
+		public TipoContext tipo() {
+			return getRuleContext(TipoContext.class,0);
 		}
 		public VariavelContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -451,7 +448,7 @@ public class GramaticaParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(131);
-			((VariavelContext)_localctx).ident1 = identificador();
+			identificador();
 			setState(136);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
@@ -461,8 +458,7 @@ public class GramaticaParser extends Parser {
 				setState(132);
 				match(T__7);
 				setState(133);
-				((VariavelContext)_localctx).identificador = identificador();
-				((VariavelContext)_localctx).outrosIdent.add(((VariavelContext)_localctx).identificador);
+				identificador();
 				}
 				}
 				setState(138);
@@ -487,12 +483,13 @@ public class GramaticaParser extends Parser {
 	}
 
 	public static class IdentificadorContext extends ParserRuleContext {
+		public Token id;
+		public DimensaoContext dimensao() {
+			return getRuleContext(DimensaoContext.class,0);
+		}
 		public List<TerminalNode> IDENT() { return getTokens(GramaticaParser.IDENT); }
 		public TerminalNode IDENT(int i) {
 			return getToken(GramaticaParser.IDENT, i);
-		}
-		public DimensaoContext dimensao() {
-			return getRuleContext(DimensaoContext.class,0);
 		}
 		public IdentificadorContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -521,7 +518,7 @@ public class GramaticaParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(142);
-			match(IDENT);
+			((IdentificadorContext)_localctx).id = match(IDENT);
 			setState(147);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
@@ -2075,6 +2072,7 @@ public class GramaticaParser extends Parser {
 	}
 
 	public static class Cmd_atribuicaoContext extends ParserRuleContext {
+		public Token pointer;
 		public IdentificadorContext identificador() {
 			return getRuleContext(IdentificadorContext.class,0);
 		}
@@ -2113,7 +2111,7 @@ public class GramaticaParser extends Parser {
 			if (_la==T__15) {
 				{
 				setState(379);
-				match(T__15);
+				((Cmd_atribuicaoContext)_localctx).pointer = match(T__15);
 				}
 			}
 
