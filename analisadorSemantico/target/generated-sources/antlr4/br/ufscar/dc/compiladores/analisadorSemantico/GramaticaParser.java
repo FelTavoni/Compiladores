@@ -967,6 +967,8 @@ public class GramaticaParser extends Parser {
 	}
 
 	public static class Declaracao_globalContext extends ParserRuleContext {
+		public Token proc;
+		public Token func;
 		public TerminalNode IDENT() { return getToken(GramaticaParser.IDENT, 0); }
 		public ParametrosContext parametros() {
 			return getRuleContext(ParametrosContext.class,0);
@@ -1016,8 +1018,10 @@ public class GramaticaParser extends Parser {
 			case T__20:
 				enterOuterAlt(_localctx, 1);
 				{
+				{
 				setState(187);
-				match(T__20);
+				((Declaracao_globalContext)_localctx).proc = match(T__20);
+				}
 				setState(188);
 				match(IDENT);
 				setState(189);
@@ -1069,8 +1073,10 @@ public class GramaticaParser extends Parser {
 			case T__24:
 				enterOuterAlt(_localctx, 2);
 				{
+				{
 				setState(207);
-				match(T__24);
+				((Declaracao_globalContext)_localctx).func = match(T__24);
+				}
 				setState(208);
 				match(IDENT);
 				setState(209);

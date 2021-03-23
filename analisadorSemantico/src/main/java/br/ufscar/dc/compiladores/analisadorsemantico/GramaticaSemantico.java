@@ -1,19 +1,24 @@
 package br.ufscar.dc.compiladores.analisadorSemantico;
 
 import br.ufscar.dc.compiladores.analisadorSemantico.TabelaDeSimbolos.TiposGramatica;
+import br.ufscar.dc.compiladores.analisadorSemantico.Escopos;
 import org.antlr.v4.runtime.Token;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
 
-    TabelaDeSimbolos tabela;
+    // Criando os escopos - o escopo já inicializado fará parte das variáveis globais
+    Escopos escoposAninhados = new Escopos();
     // Hashmap para guardar registros
     HashMap<String, ArrayList<String>> registros = new HashMap<>();
+    // Hashmap para guardar funcoes/procedimentos
+    static HashMap<String, ArrayList<TiposGramatica>> funcoes_e_procedimentos = new HashMap<>();
 
     @Override
     public Void visitPrograma(GramaticaParser.ProgramaContext ctx) {
-        tabela = new TabelaDeSimbolos();
+        // Novo escopo - a segunda lista - indica as variáveis que pertencem a função main.
+        escoposAninhados.criarNovoEscopo();
         return super.visitPrograma(ctx);
     }
 
@@ -39,6 +44,8 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
     }
 
     public void adicionaVariavelTabela(String nome, String strTipo, Token tokenNome, Token tokenTipo) {
+        // Obtendo o escopo atual
+        TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
         System.out.println("STRING: " + strTipo);
         TiposGramatica tipo = getTipoVariavel(strTipo);
         System.out.println("TIPO: " + tipo);
@@ -55,11 +62,13 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
 
     @Override
     public Void visitDeclaracao_local(GramaticaParser.Declaracao_localContext ctx) {
+        TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
+
         String strTipoVar = null;
         
         // Caso 1 -- 'declare' variavel
         if (ctx.variavel() != null) {
-            // Caso seja um registro, adicionamos na tabela de símbolos uma variável do tipo registro, e também as variáveis do registro concatenada por um ponto ao nome do registro!
+            // Caso o tipo seja 'registro', adicionamos na tabela de símbolos uma variável do tipo registro, e também as variáveis do registro concatenada por um ponto ao nome do registro!
             if (ctx.variavel().tipo().registro() != null) {
                 for (GramaticaParser.IdentificadorContext ident : ctx.variavel().identificador()) {
                     adicionaVariavelTabela(ident.getText(), "registro", ident.getStart(), null);
@@ -123,6 +132,7 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
 
     @Override
     public Void visitCmd_atribuicao(GramaticaParser.Cmd_atribuicaoContext ctx) {
+        TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
         TiposGramatica tipoExpressao = AnalisadorSemanticoUtils.verificarTipo(tabela, ctx.expressao());
         Token tSymbol = ctx.start;
         String nomeVar = ctx.identificador().getText();
@@ -151,6 +161,7 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
 
     @Override
     public Void visitCmd_leia(GramaticaParser.Cmd_leiaContext ctx) {
+        TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
         String nomeVar = ctx.ident1.getText();
         Token tSymbol = ctx.start;           // Token Symbol
         
@@ -170,6 +181,7 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
 
     @Override
     public Void visitCmd_escreva(GramaticaParser.Cmd_escrevaContext ctx) {
+        TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
         TiposGramatica tipoExpressao;
 
         // Verificação de variáveis não declaradas feita em AnalisadorSemanticoUtils, ao analisar seus tipos. Se detectado 'null', não foi declarado.
@@ -183,15 +195,56 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
     // 'se' expressao 'entao' (cmd)* ('senao' (cmd)*)? 'fim_se'
     @Override
     public Void visitCmd_se(GramaticaParser.Cmd_seContext ctx) {
+        TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
         TiposGramatica tipoExpressao = AnalisadorSemanticoUtils.verificarTipo(tabela, ctx.expressao());
         Token tSymbol = ctx.start; 
 
         System.out.println("Expressao if: " + ctx.expressao().getText() + " de tipo " + tipoExpressao);
 
         if (tipoExpressao != TiposGramatica.LOGICO) {
-            AnalisadorSemanticoUtils.adicionarErroSemantico(tSymbol, "erro na expressao do if!");
+            System.out.println("Erro no comando if!");
         }
 
         return super.visitCmd_se(ctx);
     }
+
+    @Override
+    public Void visitCmd_enquanto(GramaticaParser.Cmd_enquantoContext ctx) { 
+        TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
+        TiposGramatica tipoExpressao = AnalisadorSemanticoUtils.verificarTipo(tabela, ctx.expressao());
+        Token tSymbol = ctx.start; 
+
+        System.out.println("Expressao while: " + ctx.expressao().getText() + " de tipo " + tipoExpressao);
+
+        if (tipoExpressao != TiposGramatica.LOGICO) {
+            System.out.println("Erro no comando while!");
+        }
+
+        return super.visitCmd_enquanto(ctx);
+    }
+
+    @Override 
+    public Void visitDeclaracao_global(GramaticaParser.Declaracao_globalContext ctx) { 
+        escoposAninhados.criarNovoEscopo();
+        TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
+        ArrayList<TiposGramatica> variaveis_do_parametro = new ArrayList<TiposGramatica>();
+
+        if (ctx.func != null) {
+            System.out.println("É uma função!");
+            for (GramaticaParser.ParametroContext parametro : ctx.parametros().parametro()) {
+                for (GramaticaParser.IdentificadorContext ident : parametro.identificador()) {
+                    adicionaVariavelTabela(ident.getText(), parametro.tipo_estendido().getText(), ident.getStart(), ident.getStart());
+                    variaveis_do_parametro.add(getTipoVariavel(parametro.tipo_estendido().getText()));
+                }
+            }
+            // Adicionando o tipo de retorno da função!
+            variaveis_do_parametro.add(getTipoVariavel(ctx.tipo_estendido().getText()));
+            funcoes_e_procedimentos.put(ctx.IDENT().getText(), variaveis_do_parametro);
+        } else {
+            System.out.println("É um procedimento!");
+        }
+        
+        return super.visitDeclaracao_global(ctx);
+    }
+    
 }

@@ -57,6 +57,7 @@ br\ufscar\dc\compiladores\analisadorSemantico\GramaticaParser$ProgramaContext.cl
 br\ufscar\dc\compiladores\analisadorSemantico\GramaticaParser$Cmd_chamadaContext.class
 br\ufscar\dc\compiladores\analisadorSemantico\GramaticaParser$RegistroContext.class
 br\ufscar\dc\compiladores\analisadorSemantico\GramaticaParser$Termo_logicoContext.class
+br\ufscar\dc\compiladores\analisadorSemantico\Escopos.class
 br\ufscar\dc\compiladores\analisadorSemantico\GramaticaParser$Parcela_logicaContext.class
 br\ufscar\dc\compiladores\analisadorSemantico\GramaticaParser$CmdContext.class
 br\ufscar\dc\compiladores\analisadorSemantico\GramaticaParser$Op_unarioContext.class

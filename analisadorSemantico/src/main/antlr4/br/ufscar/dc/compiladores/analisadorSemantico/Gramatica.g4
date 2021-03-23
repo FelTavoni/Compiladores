@@ -161,8 +161,8 @@ registro:
         ;
 
 declaracao_global:
-            'procedimento' IDENT '(' parametros? ')' (declaracao_local)* (cmd)* 'fim_procedimento'
-        |   'funcao' IDENT '(' parametros? ')' ':' tipo_estendido (declaracao_local)* (cmd)* 'fim_funcao'
+            (proc='procedimento') IDENT '(' parametros? ')' (declaracao_local)* (cmd)* 'fim_procedimento'
+        |   (func='funcao') IDENT '(' parametros? ')' ':' tipo_estendido (declaracao_local)* (cmd)* 'fim_funcao'
         ;
 
 parametro:

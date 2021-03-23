@@ -122,20 +122,23 @@ public class AnalisadorSemanticoUtils {
         }
         // Caso seja do tipo -- IDENT '(' expressao (',' expressao)* ')' -- verificar o tipo de IDENT e também expressões subsequentes usando a recursão
         else if (ctx.IDENT() != null) {
-            // Verificar o tipo da variável e expressões
-            String nomeVar = ctx.IDENT().getText();
-            if (!tabela.existe(nomeVar)) {
-                adicionarErroSemantico(ctx.IDENT().getSymbol(), "identificador " + nomeVar + " nao declarado");
-                ret = TabelaDeSimbolos.TiposGramatica.INVALIDO;
-            } else {
-                ret = tabela.verificar(nomeVar);
-            }
-            // Examina as expressoes disponíveis...
-            for (GramaticaParser.ExpressaoContext expressao : ctx.expressao()) {
-                TabelaDeSimbolos.TiposGramatica aux = verificarTipo(tabela, expressao);
-                if ( (ret != aux) && (aux != TabelaDeSimbolos.TiposGramatica.INVALIDO) ){
-                    ret = TabelaDeSimbolos.TiposGramatica.INVALIDO;
+            if (GramaticaSemantico.funcoes_e_procedimentos.containsKey(ctx.IDENT().getText())) {
+                List<TabelaDeSimbolos.TiposGramatica> aux = GramaticaSemantico.funcoes_e_procedimentos.get(ctx.IDENT().getText());
+                System.out.println("EM " + ctx.IDENT().getText() + " FUNCAO");
+                if (aux.size()-1 == ctx.expressao().size()) {
+                    for (int i = 0; i < ctx.expressao().size(); i++) {
+                        System.out.println("TIPO PARAM: " + aux.get(i) + " TIPO EXPRESSAO (" + ctx.expressao().get(i).getText() + "): " + verificarTipo(tabela, ctx.expressao().get(i)));
+                        if (aux.get(i) != verificarTipo(tabela, ctx.expressao().get(i))) {
+                            adicionarErroSemantico(ctx.expressao().get(i).getStart(), "incompatibilidade de parametros na chamada de " + ctx.IDENT().getText());
+                        }
+                    }
+                    ret = aux.get(aux.size()-1);
+                } else {
+                    adicionarErroSemantico(ctx.IDENT().getSymbol(), "incompatibilidade de parametros na chamada de " + ctx.IDENT().getText());
                 }
+            } else {
+                // O retorno dessa função não será de grande interesse
+                ret = TabelaDeSimbolos.TiposGramatica.INVALIDO;
             }
         }
         // Caso seja constante, basta que retornemos seu tipo!
