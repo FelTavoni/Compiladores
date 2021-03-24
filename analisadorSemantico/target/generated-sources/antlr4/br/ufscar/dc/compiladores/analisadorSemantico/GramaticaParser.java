@@ -1510,9 +1510,6 @@ public class GramaticaParser extends Parser {
 	}
 
 	public static class Cmd_leiaContext extends ParserRuleContext {
-		public IdentificadorContext ident1;
-		public IdentificadorContext identificador;
-		public List<IdentificadorContext> outrosIdent = new ArrayList<IdentificadorContext>();
 		public List<IdentificadorContext> identificador() {
 			return getRuleContexts(IdentificadorContext.class);
 		}
@@ -1560,7 +1557,7 @@ public class GramaticaParser extends Parser {
 			}
 
 			setState(283);
-			((Cmd_leiaContext)_localctx).ident1 = identificador();
+			identificador();
 			setState(291);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
@@ -1580,8 +1577,7 @@ public class GramaticaParser extends Parser {
 				}
 
 				setState(288);
-				((Cmd_leiaContext)_localctx).identificador = identificador();
-				((Cmd_leiaContext)_localctx).outrosIdent.add(((Cmd_leiaContext)_localctx).identificador);
+				identificador();
 				}
 				}
 				setState(293);

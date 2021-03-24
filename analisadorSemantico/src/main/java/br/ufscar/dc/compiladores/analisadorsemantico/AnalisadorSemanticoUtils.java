@@ -112,8 +112,9 @@ public class AnalisadorSemanticoUtils {
         
         // No caso do identificador ser -- '^'? identificador -- basta olhar na tabela seu tipo e retorná-lo.
         if (ctx.identificador() != null) {
-            if (tabela.existe(ctx.identificador().getText())) {
-                ret = tabela.verificar(ctx.identificador().getText());
+            String nomeVar = ctx.identificador().getText();
+            if (tabela.existe(nomeVar)) {
+                ret = tabela.verificar(nomeVar);
             } else {
                 // Variável não declarada! Disparar erro e retornar null
                 adicionarErroSemantico(ctx.identificador().getStart(), "identificador " + ctx.identificador().getText() + " nao declarado");
@@ -240,6 +241,7 @@ public class AnalisadorSemanticoUtils {
         }
     }
     
+    // Método para obter o tipo da variável se dísponivel na tabela de símbolos. Caso não esteja disponível, o tipo do retorno será INVALIDO.
     public static TabelaDeSimbolos.TiposGramatica verificarTipo(TabelaDeSimbolos tabela, String nomeVar) {
         if (tabela.existe(nomeVar)) {
             return tabela.verificar(nomeVar);

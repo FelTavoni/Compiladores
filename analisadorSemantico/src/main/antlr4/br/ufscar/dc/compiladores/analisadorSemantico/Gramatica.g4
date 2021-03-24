@@ -191,7 +191,7 @@ cmd:
         ;
 
 cmd_leia:
-            'leia' '(' '^'? ident1=identificador (',' '^'? outrosIdent+=identificador)* ')'
+            'leia' '(' '^'? identificador (',' '^'? identificador)* ')'
         ;
 
 cmd_escreva:
