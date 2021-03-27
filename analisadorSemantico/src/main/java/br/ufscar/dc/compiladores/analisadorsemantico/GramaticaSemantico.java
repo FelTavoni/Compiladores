@@ -18,16 +18,14 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
     static HashMap<String, ArrayList<TiposGramatica>> funcoes_e_procedimentos = new HashMap<>();
 
     @Override
-    public Void visitPrograma(GramaticaParser.ProgramaContext ctx) {
-        // Novo escopo, indica as variáveis que pertencem a função main.
+    public Void visitCorpo(GramaticaParser.CorpoContext ctx) {
+        // Criando o escopo da função principal
         escoposAninhados.criarNovoEscopo();
-        for (GramaticaParser.CmdContext comando : ctx.corpo().cmd()) {
-            if (comando.cmd_retorne() != null) {
-                AnalisadorSemanticoUtils.adicionarErroSemantico(comando.cmd_retorne().getStart(), "comando retorne nao permitido nesse escopo");
-            }
+        for (GramaticaParser.CmdContext cmd : ctx.cmd())
+        if (cmd.cmd_retorne() != null) {
+            AnalisadorSemanticoUtils.adicionarErroSemantico(cmd.getStart(), "comando retorne nao permitido nesse escopo");
         }
-        
-        return super.visitPrograma(ctx);
+        return super.visitCorpo(ctx);
     }
 
     // Simples método que obtém o TipoGramatica a partir de uma string.
@@ -60,18 +58,40 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
     //  variável, quanto no nome (se já declarada ou não). Caso o tipo seja um problema, adiona-o mesmo assim, pois foi declarada de certa
     //  forma, apenas seu tipo foi escrito errado.
     public void adicionaVariavelTabela(String nome, String strTipo, Token tokenNome, Token tokenTipo) {
-        // Obtendo o escopo atual
+        // Obtendo o escopo atual.
         TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
+        // Obtendo o escopo global do programa (pegar o último elemento dado a lista ligada).
+        TabelaDeSimbolos tabelaEscopoGlobal = escoposAninhados.percorrerEscoposAninhados().get(escoposAninhados.percorrerEscoposAninhados().size()-1);
         TiposGramatica tipo = getTipoVariavel(strTipo);
         if (tipo == TiposGramatica.INVALIDO) {
             AnalisadorSemanticoUtils.adicionarErroSemantico(tokenTipo, "tipo " + strTipo + " nao declarado");
         }
         if ( !tabela.existe(nome) ) {
-            tabela.adicionar(nome, tipo);
-            System.out.println("NOVA VARIÁVEL " + nome + " DE TIPO " + tipo);
+            // Verificando o escopo global!
+            if (!tabelaEscopoGlobal.existe(nome)) {
+                tabela.adicionar(nome, tipo);
+            } else {
+                AnalisadorSemanticoUtils.adicionarErroSemantico(tokenNome, "identificador " + nome + " ja declarado anteriormente");
+            }
         } else {
             AnalisadorSemanticoUtils.adicionarErroSemantico(tokenNome, "identificador " + nome + " ja declarado anteriormente");
         }
+    }
+
+    // Método para verificar se a variável é de dimensão. Caso seja, exclui a parte de dimensão e a trata como uma variável comum. Retorna o nome da
+    //  variável recortada ou não.
+    public String verificaDimensao(GramaticaParser.IdentificadorContext ident) {
+        String nomeVar;
+        if (ident.dimensao().expressao_aritmetica().size() > 0) {
+            nomeVar = ident.id.getText();
+            for (GramaticaParser.Expressao_aritmeticaContext expr : ident.dimensao().expressao_aritmetica()) {
+                System.out.println(ident.getText() + " tem dimensao: " + ident.id.getText() + ", expr: " + expr.getText());
+            }
+        } else {
+            nomeVar = ident.getText();
+            System.out.println(ident.getText() + " não tem dimensao");
+        }
+        return nomeVar;
     }
 
     // Método que trata os diferentes tipos de declaração.
@@ -100,15 +120,17 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
                 strTipoVar = ctx.variavel().tipo().getText();
                 // Caso elá seja um tipo de registro já declarado anteriormente, obtemos por meio de uma estrutura Hash 'registros', uma Lista das variáveis que 
                 //  pertecem à aquele registro. Em seguida, o mesmo processo de adição que anteriormente.
+                String nome;
                 if (registros.containsKey(strTipoVar)) {
                     ArrayList<String> variaveis_registro = registros.get(strTipoVar);
                     for (GramaticaParser.IdentificadorContext ident : ctx.variavel().identificador()) {
-                        if (tabela.existe(ident.getText()) || registros.containsKey(ident.getText())) {
-                            AnalisadorSemanticoUtils.adicionarErroSemantico(ident.getStart(), "identificador " + ident.getText() + " ja declarado anteriormente");
+                        nome = verificaDimensao(ident);
+                        if (tabela.existe(nome) || registros.containsKey(nome)) {
+                            AnalisadorSemanticoUtils.adicionarErroSemantico(ident.getStart(), "identificador " + nome + " ja declarado anteriormente");
                         } else {
-                            adicionaVariavelTabela(ident.getText(), "registro", ident.getStart(), ctx.variavel().tipo().getStart());
+                            adicionaVariavelTabela(nome, "registro", ident.getStart(), ctx.variavel().tipo().getStart());
                             for (int i = 0; i < variaveis_registro.size(); i = i + 2) {
-                                adicionaVariavelTabela(ident.getText() + '.' + variaveis_registro.get(i), variaveis_registro.get(i+1), ident.getStart(), ctx.variavel().tipo().getStart());
+                                adicionaVariavelTabela(nome + '.' + variaveis_registro.get(i), variaveis_registro.get(i+1), ident.getStart(), ctx.variavel().tipo().getStart());
                             }
                         }
                     }
@@ -121,10 +143,11 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
                 // Se uma variável padrão (nomes: tipo), apenas adicioná-las a tabela.
                 } else {
                     for (GramaticaParser.IdentificadorContext ident : ctx.variavel().identificador()) {
-                        if (funcoes_e_procedimentos.containsKey(ident.getText())) {
-                            AnalisadorSemanticoUtils.adicionarErroSemantico(ident.getStart(), "identificador " + ident.getText() + " ja declarado anteriormente");
+                        String nomeVar = verificaDimensao(ident);
+                        if (funcoes_e_procedimentos.containsKey(nomeVar)) {
+                            AnalisadorSemanticoUtils.adicionarErroSemantico(ident.getStart(), "identificador " + nomeVar + " ja declarado anteriormente");
                         } else {
-                            adicionaVariavelTabela(ident.getText(), strTipoVar, ident.getStart(), ctx.variavel().tipo().getStart());
+                            adicionaVariavelTabela(nomeVar, strTipoVar, ident.getStart(), ctx.variavel().tipo().getStart());
                         }
                     }
                 }
@@ -166,7 +189,7 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
     public Void visitCmd_atribuicao(GramaticaParser.Cmd_atribuicaoContext ctx) {
         TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
         TiposGramatica tipoExpressao = AnalisadorSemanticoUtils.verificarTipo(tabela, ctx.expressao());
-        String varAtribuicao = ctx.identificador().getText();
+        String varAtribuicao = verificaDimensao(ctx.identificador());
 
         System.out.println(varAtribuicao + "(Tipo: " + AnalisadorSemanticoUtils.verificarTipo(tabela, varAtribuicao) + ") <- " + tipoExpressao);
 
@@ -174,7 +197,7 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
         if (tipoExpressao != TiposGramatica.INVALIDO) {
             // Variável de atribuição existe?
             if (!tabela.existe(varAtribuicao)) {
-                AnalisadorSemanticoUtils.adicionarErroSemantico(ctx.identificador().getStart(), "identificador " + varAtribuicao + " nao declarado");
+                AnalisadorSemanticoUtils.adicionarErroSemantico(ctx.identificador().getStart(), "identificador " + ctx.identificador().getText() + " nao declarado");
             // Caso exista, obter o tipo dessa variável e compará-la com o retorno da expressão. Se divergentes, é permitido apenas que estejam en-
             //  tre INTEIRO e REAL, caso contrário, lançar erro.
             } else {
@@ -183,15 +206,16 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
                     if ( !(((tipoVarAtribuicao == TiposGramatica.REAL) || (tipoVarAtribuicao == TiposGramatica.INTEIRO)) & ((tipoExpressao == TiposGramatica.INTEIRO) || (tipoExpressao == TiposGramatica.REAL))) ) {
                         // Se ponteiro, adicionar o indicador na mensagem do erro.
                         if (ctx.pointer != null) {
-                            varAtribuicao = "^" + varAtribuicao;
+                            AnalisadorSemanticoUtils.adicionarErroSemantico(ctx.identificador().getStart(), "atribuicao nao compativel para ^" + ctx.identificador().getText());
+                        } else {
+                            AnalisadorSemanticoUtils.adicionarErroSemantico(ctx.identificador().getStart(), "atribuicao nao compativel para " + ctx.identificador().getText());
                         }
-                        AnalisadorSemanticoUtils.adicionarErroSemantico(ctx.identificador().getStart(), "atribuicao nao compativel para " + varAtribuicao);
                     }
                 }
             }
         // Retorno da expressão é inválido.
         } else {
-            AnalisadorSemanticoUtils.adicionarErroSemantico(ctx.identificador().getStart(), "atribuicao nao compativel para " + varAtribuicao);
+            AnalisadorSemanticoUtils.adicionarErroSemantico(ctx.identificador().getStart(), "atribuicao nao compativel para " + ctx.identificador().getText());
         }
         return super.visitCmd_atribuicao(ctx);
     }
@@ -202,10 +226,11 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
     public Void visitCmd_leia(GramaticaParser.Cmd_leiaContext ctx) {
         TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
         TiposGramatica tipoExpressao;
+        String nomeVar;
         
         for (GramaticaParser.IdentificadorContext ident : ctx.identificador()) {
-            System.out.println("OLHA SO: " + ident.getText());
-            if (!tabela.existe(ident.getText())) {
+            nomeVar = verificaDimensao(ident);
+            if (!tabela.existe(nomeVar)) {
                 AnalisadorSemanticoUtils.adicionarErroSemantico(ident.getStart(), "identificador " + ident.getText() + " nao declarado");
             }
         }
@@ -258,6 +283,7 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
     @Override 
     public Void visitDeclaracao_global(GramaticaParser.Declaracao_globalContext ctx) { 
         escoposAninhados.criarNovoEscopo();
+        System.out.println("CRIADO ESCOPO FUNCAO");
         TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
         ArrayList<TiposGramatica> variaveis_do_parametro = new ArrayList<TiposGramatica>();
 
@@ -317,7 +343,7 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
             }
             for (GramaticaParser.CmdContext comando : ctx.cmd()) {
                 if (comando.cmd_retorne() != null) {
-                    System.out.println("COMANDO RETORNE NÃO PERMITIDO");
+                    AnalisadorSemanticoUtils.adicionarErroSemantico(comando.getStart(), "comando retorne nao permitido nesse escopo");
                 }
             }
             funcoes_e_procedimentos.put(ctx.IDENT().getText(), variaveis_do_parametro);

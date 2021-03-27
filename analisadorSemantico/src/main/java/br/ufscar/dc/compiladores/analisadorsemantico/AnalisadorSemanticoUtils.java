@@ -112,7 +112,12 @@ public class AnalisadorSemanticoUtils {
         
         // No caso do identificador ser -- '^'? identificador -- basta olhar na tabela seu tipo e retorná-lo.
         if (ctx.identificador() != null) {
-            String nomeVar = ctx.identificador().getText();
+            String nomeVar;
+            if (ctx.identificador().dimensao().expressao_aritmetica().size() > 0) {
+                nomeVar = ctx.identificador().id.getText();
+            } else {
+                nomeVar = ctx.identificador().getText();
+            }
             if (tabela.existe(nomeVar)) {
                 ret = tabela.verificar(nomeVar);
             } else {
