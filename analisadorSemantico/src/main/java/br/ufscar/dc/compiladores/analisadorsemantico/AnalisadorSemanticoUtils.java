@@ -121,9 +121,15 @@ public class AnalisadorSemanticoUtils {
             if (tabela.existe(nomeVar)) {
                 ret = tabela.verificar(nomeVar);
             } else {
-                // Variável não declarada! Disparar erro e retornar null
-                adicionarErroSemantico(ctx.identificador().getStart(), "identificador " + ctx.identificador().getText() + " nao declarado");
-                ret = TabelaDeSimbolos.TiposGramatica.INVALIDO;
+                // Caso a variável não exista neste escopo, verificar no escopo global (primeiro escopo).
+                TabelaDeSimbolos tabelaEscopoGlobal = GramaticaSemantico.escoposAninhados.percorrerEscoposAninhados().get(GramaticaSemantico.escoposAninhados.percorrerEscoposAninhados().size()-1);
+                if (tabelaEscopoGlobal.existe(nomeVar)) {
+                    ret = tabelaEscopoGlobal.verificar(nomeVar);
+                } else {
+                    // Variável não declarada! Disparar erro e retornar null
+                    adicionarErroSemantico(ctx.identificador().getStart(), "identificador " + ctx.identificador().getText() + " nao declarado");
+                    ret = TabelaDeSimbolos.TiposGramatica.INVALIDO;
+                }
             }
         }
         // Caso seja do tipo -- IDENT '(' expressao (',' expressao)* ')' -- verificar o tipo de IDENT e também expressões subsequentes usando a recursão

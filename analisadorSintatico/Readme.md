@@ -20,7 +20,7 @@ O analisador sintático foi construído em java, integrado com a ferramenta ANTL
 
 Para compilar o programa, é necessário que você realize o download da pasta acima. Basta então adentrar o diretório e invocar o maven para realizar a construção do executável.
 
-`mvn install`
+`mvn clean install`
 
 Após a construção do programa, será gerado um executável, em que para executá-lo, basta executar o comando abaixo, no qual `<arquivo-de-entrada>` deve ser o arquivo-alvo a ser lido e `<arquivo-de-saída>` conterá a saída do programa.
 
@@ -28,7 +28,7 @@ Após a construção do programa, será gerado um executável, em que para execu
 
 ## Arquivo executável
 
-Há também localizado no diretório `analisadorSintatico\target` o executável do programa.
+Há também localizado no diretório `analisadorSintatico\target` o executável do programa. Uma nova compilação irá sobreescreve-lô.
 
 ## Testes
 

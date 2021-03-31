@@ -28,7 +28,6 @@ br\ufscar\dc\compiladores\analisadorSemantico\GramaticaParser$Fator_logicoContex
 br\ufscar\dc\compiladores\analisadorSemantico\TabelaDeSimbolos.class
 br\ufscar\dc\compiladores\analisadorSemantico\GramaticaParser$Op1Context.class
 br\ufscar\dc\compiladores\analisadorSemantico\GramaticaLexer.class
-br\ufscar\dc\compiladores\analisadorSemantico\MyCustomErrorListener.class
 br\ufscar\dc\compiladores\analisadorSemantico\GramaticaParser$Decl_local_globalContext.class
 br\ufscar\dc\compiladores\analisadorSemantico\GramaticaParser$VariavelContext.class
 br\ufscar\dc\compiladores\analisadorSemantico\GramaticaParser$Cmd_paraContext.class

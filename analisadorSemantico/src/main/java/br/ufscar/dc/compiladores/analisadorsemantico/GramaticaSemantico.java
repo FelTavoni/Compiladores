@@ -9,7 +9,7 @@ import java.util.HashMap;
 public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
 
     // Criando os escopos - o escopo já inicializado fará parte das variáveis globais
-    Escopos escoposAninhados = new Escopos();
+    static Escopos escoposAninhados = new Escopos();
     // Hashmap para guardar protótipos de registros
     HashMap<String, ArrayList<String>> registros = new HashMap<>();
     // Hashmap para guardar protótipos de novos tipos
@@ -54,9 +54,9 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
         }
     }
 
-    // Método que adiciona a variável passada por parámetro a tabela. É capaz de lançar erros caso detecte alguma anomalia, tanto no tipo da
-    //  variável, quanto no nome (se já declarada ou não). Caso o tipo seja um problema, adiona-o mesmo assim, pois foi declarada de certa
-    //  forma, apenas seu tipo foi escrito errado.
+    // Método que adiciona a variável passada por parâmetro a tabela. É capaz de lançar erros caso detecte alguma anomalia, tanto no tipo da
+    //  variável, quanto no nome (se já declarada ou não). Caso detecte um erro, adiciona a variável mesmo assim, pois foi declarada de certa
+    //  forma, apenas seu tipo foi escrito errado. A medida é util para futuras vereificações.
     public void adicionaVariavelTabela(String nome, String strTipo, Token tokenNome, Token tokenTipo) {
         // Obtendo o escopo atual.
         TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
@@ -78,8 +78,8 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
         }
     }
 
-    // Método para verificar se a variável é de dimensão. Caso seja, exclui a parte de dimensão e a trata como uma variável comum. Retorna o nome da
-    //  variável recortada ou não.
+    // Método para verificar se a variável possui dimensão. Em caso afirmativo, exclui a parte de dimensão e a trata como uma variável comum. 
+    //  Retorna o nome da variável recortada ou não.
     public String verificaDimensao(GramaticaParser.IdentificadorContext ident) {
         String nomeVar;
         if (ident.dimensao().expressao_aritmetica().size() > 0) {
@@ -97,8 +97,8 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
     // Método que trata os diferentes tipos de declaração.
     @Override
     public Void visitDeclaracao_local(GramaticaParser.Declaracao_localContext ctx) {
+        
         TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
-
         String strTipoVar = null;
         
         // Primeiro caso: 'declare' variavel
@@ -140,7 +140,7 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
                     for (GramaticaParser.IdentificadorContext ident : ctx.variavel().identificador()) {
                         adicionaVariavelTabela(ident.getText(), strTipoVar, ident.getStart(), ctx.variavel().tipo().getStart());
                     }
-                // Se uma variável padrão (nomes: tipo), apenas adicioná-las a tabela.
+                // Se uma variável for padrão (nomes: tipo), apenas adicioná-las a tabela.
                 } else {
                     for (GramaticaParser.IdentificadorContext ident : ctx.variavel().identificador()) {
                         String nomeVar = verificaDimensao(ident);
@@ -160,8 +160,8 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
 
         // Terceiro caso: 'tipo' IDENT ':' tipo
         } else {
-            // Caso esteja declarando um novo tipo 'registro', adicioná-la a estrutura Hash global de protótipos de tipos de registro - 'registros.
-            //  Não é necessário adicioná-los a tabela, pois é um novo tipo, a verificação de seu nome será feita ao declarar uma variável.
+            // Caso esteja declarando um novo tipo 'registro', adicioná-la a estrutura Hash global de protótipos de tipos de registro - 'registros'.
+            //  Não é necessário adicioná-los a tabela, pois é um novo tipo, a verificação de seu nome será feita ao declarar uma variável desse tipo.
             if (ctx.tipo().registro() != null) {
                 ArrayList<String> variaveis_registro = new ArrayList<String>();
                 for (GramaticaParser.VariavelContext vars : ctx.tipo().registro().variavel()) {
@@ -172,7 +172,7 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
                     }
                 }
                 registros.put(ctx.IDENT().getText(), variaveis_registro);
-            // Caso seja um outro tipo, adicioná-la aqui.
+            // Caso seja um outro tipo, não registro, adicioná-la aqui.
             } else {
                 strTipoVar = ctx.tipo().getText();
                 novoTipoUnario.put(ctx.IDENT().getText(), strTipoVar);
@@ -182,24 +182,49 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
         return super.visitDeclaracao_local(ctx);
     }
 
+    @Override 
+    public Void visitCmd(GramaticaParser.CmdContext ctx) {
+        if (ctx.cmd_atribuicao() != null) {
+            return visitCmd_atribuicao(ctx.cmd_atribuicao());
+        } else if (ctx.cmd_leia() != null) {
+            return visitCmd_leia(ctx.cmd_leia());
+        } else if (ctx.cmd_escreva() != null) {
+            return visitCmd_escreva(ctx.cmd_escreva());
+        } else if (ctx.cmd_se() != null) {
+            return visitCmd_se(ctx.cmd_se());
+        } else if (ctx.cmd_caso() != null) {
+            return visitCmd_caso(ctx.cmd_caso());
+        } else if (ctx.cmd_enquanto() != null) {
+            return visitCmd_enquanto(ctx.cmd_enquanto());
+        } else if (ctx.cmd_chamada() != null) {
+            return visitCmd_chamada(ctx.cmd_chamada());
+        } else if (ctx.cmd_para() != null) {
+            return visitCmd_para(ctx.cmd_para());
+        } else if (ctx.cmd_faca() != null) {
+            return visitCmd_faca(ctx.cmd_faca());
+        } else if (ctx.cmd_retorne() != null) {
+            return visitCmd_retorne(ctx.cmd_retorne());
+        }
+        return null;
+    }
+
     // O comando de atribuição deve ser dividido em 2 análises. A análise do tipo da variável a se atribuir um valor e o tipo resultante da expressão.
     //  Ambas devem possuir o mesmo tipo para que a atribuição ocorra (com excessão dos valores INTEIRO e REAL, definidos na documentação). Essa veri-
-    //  ficação fica a cargo da chamada 'verificarTipo', enquanto a comparação entre esses é responsábilidade do método a seguir.
+    //  ficação fica a cargo da chamada 'verificarTipo', enquanto a comparação entre esses é responsabilidade do método a seguir.
     @Override
     public Void visitCmd_atribuicao(GramaticaParser.Cmd_atribuicaoContext ctx) {
+        // Obtenção do escopo atual, o tipo da expressão a atribuir e o nome da variável (removendo possíveis dimensões).
         TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
         TiposGramatica tipoExpressao = AnalisadorSemanticoUtils.verificarTipo(tabela, ctx.expressao());
         String varAtribuicao = verificaDimensao(ctx.identificador());
 
-        System.out.println(varAtribuicao + "(Tipo: " + AnalisadorSemanticoUtils.verificarTipo(tabela, varAtribuicao) + ") <- " + tipoExpressao);
-
-        // Retorno da expressão não é inválido!
+        // Caso o retorno não seja inválido, verificar o tipo da variável a receber o valor, assim como os tipos correspondentes.
+        // Se a veriável existe, 
         if (tipoExpressao != TiposGramatica.INVALIDO) {
-            // Variável de atribuição existe?
+            // Verificação de existência da variável. Obtém-se então o tipo dessa variável e a compara com o retorno da expressão. Se divergentes, 
+            //  é permitido apenas que estejam entre INTEIRO e REAL, caso contrário, lançar erro.
             if (!tabela.existe(varAtribuicao)) {
                 AnalisadorSemanticoUtils.adicionarErroSemantico(ctx.identificador().getStart(), "identificador " + ctx.identificador().getText() + " nao declarado");
-            // Caso exista, obter o tipo dessa variável e compará-la com o retorno da expressão. Se divergentes, é permitido apenas que estejam en-
-            //  tre INTEIRO e REAL, caso contrário, lançar erro.
             } else {
                 TiposGramatica tipoVarAtribuicao = AnalisadorSemanticoUtils.verificarTipo(tabela, varAtribuicao);
                 if (tipoVarAtribuicao != tipoExpressao) {
@@ -221,7 +246,7 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
     }
 
     // O comando leia a seguir varre a lista dos identificadores no comando leia. A cada identificador, procura verificar a existência do elemento
-    //  na tabela de símbolos. Caso não esteja disponível, a variável não foi declarada, sendo necessário reportar o erro.
+    //  na tabela de símbolos. Caso não esteja disponível, a variável não foi declarada, sendo necessário lançar um erro.
     @Override
     public Void visitCmd_leia(GramaticaParser.Cmd_leiaContext ctx) {
         TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
@@ -240,7 +265,7 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
 
     // O comando escreva a seguir percorre a lista de expressões presentes no comando escreva. A cada expressão, invoca 'verificarTipo' para verificar
     //  o tipo de retorno das expressões. Erros como não declaração de variáveis ou incompatibilidade de parâmetros (em caso de funções e procedimentos)
-    //  estão inclusos na implementação das chamadas 'verificarTipo'.
+    //  estão inclusos na implementação das chamadas 'verificarTipo' em 'AnalisadorSemanticoUtils'.
     @Override
     public Void visitCmd_escreva(GramaticaParser.Cmd_escrevaContext ctx) {
         TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
@@ -254,7 +279,7 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
         return super.visitCmd_escreva(ctx);
     }
 
-    // O comando 'se' a seguir apenas implementa a verificação da expressão 'master' do comando if. Outros comandos chamados serão tratados pelos outros métodos.
+    // O comando 'se' a seguir apenas implementa a verificação da expressão do comando if. Outros comandos chamados serão tratados pelos outros métodos.
     //  Erros referentes a variáveis ou incompatibilidade do retorno das expressões (em caso de relacionais) serão tratados com a chamada 'verificarTipo'.
     @Override
     public Void visitCmd_se(GramaticaParser.Cmd_seContext ctx) {
@@ -264,14 +289,39 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
         return super.visitCmd_se(ctx);
     }
 
-    // Assim como no comando 'if', o método para tratar o comando 'enquanto' deve apenas se preocupar com a expressão da condição. Logo, a idéia da implementação
-    //  é idêntica a implementada no comando 'if', com as alterações necessárias.
+    // Assim como no comando 'if', o método para tratar o comando da expressão do 'enquanto' deve apenas se preocupar com a expressão da condição. Logo, a 
+    //  idéia da implementação é idêntica a implementada no comando 'if', com as alterações necessárias.
     @Override
     public Void visitCmd_enquanto(GramaticaParser.Cmd_enquantoContext ctx) { 
         TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
         TiposGramatica tipoExpressao = AnalisadorSemanticoUtils.verificarTipo(tabela, ctx.expressao());
 
         return super.visitCmd_enquanto(ctx);
+    }
+
+    // Para o comando 'caso', verificar o tipo da expressao aritmetica da condição, e os comandos associados aos casos, por meio da recursão.
+    @Override 
+    public Void visitCmd_caso(GramaticaParser.Cmd_casoContext ctx) {
+        TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
+        TiposGramatica tipoExpressao = AnalisadorSemanticoUtils.verificarTipo(tabela, ctx.expressao_aritmetica());
+
+        ctx.cmd().forEach(cmd -> visitCmd(cmd));
+
+        return super.visitCmd_caso(ctx);
+    }
+
+    // Para o comando 'para', verificamos se o contador é uma variável declarada, assim como suas expressões aritméticas. 'verificarTipo' novamente se
+    //  encarrega dessas verificações. Uma chamada recursiva ao comando é feita para verificá-los.
+    @Override 
+    public Void visitCmd_para(GramaticaParser.Cmd_paraContext ctx) {
+        TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
+        if (!tabela.existe(ctx.IDENT().getText())) {
+            AnalisadorSemanticoUtils.adicionarErroSemantico(ctx.IDENT().getSymbol(), "identificador " + ctx.IDENT().getText() + " nao declarado");
+        }
+        ctx.expressao_aritmetica().forEach(expr_arit -> AnalisadorSemanticoUtils.verificarTipo(tabela, expr_arit));
+        ctx.cmd().forEach(cmd -> visitCmd(cmd));
+
+        return super.visitCmd_para(ctx);
     }
 
     // Quando deparado com uma declaração global, há 2 possibilidades: função ou procedimento. A função seria responsável por retornar algo, enquanto o procedi-
@@ -282,8 +332,8 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
     //  essa lista para comparar os tipos correspondentes das variáveis.
     @Override 
     public Void visitDeclaracao_global(GramaticaParser.Declaracao_globalContext ctx) { 
+        // Criação de um novo escopo, atualização da tabela com o novo escopo e declaração de uma lista para armazenar os tipos das variáveis do parâmetro.
         escoposAninhados.criarNovoEscopo();
-        System.out.println("CRIADO ESCOPO FUNCAO");
         TabelaDeSimbolos tabela = escoposAninhados.obterEscopoAtual();
         ArrayList<TiposGramatica> variaveis_do_parametro = new ArrayList<TiposGramatica>();
 
@@ -317,7 +367,7 @@ public class GramaticaSemantico extends GramaticaBaseVisitor<Void> {
             funcoes_e_procedimentos.put(ctx.IDENT().getText(), variaveis_do_parametro);
 
         } else {
-            // No procedimento, adicionando as variáveis ao escopo atual.
+            // Em caso de procedimento, adicionando as variáveis ao escopo atual.
             for (GramaticaParser.ParametroContext parametro : ctx.parametros().parametro()) {
                 // É um tipo básico!
                 if (parametro.tipo_estendido().tipo_basico_ident().tipo_basico() != null) {
