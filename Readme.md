@@ -2,7 +2,7 @@
 
 Seja bem vindo! Repositório pessoal referente à displina Construção de Compiladores. Local usado para armazenar os trabalhos da disciplina.
 
-## Organização do diretório
+## Organização do Repositório
 
 ```
 .
